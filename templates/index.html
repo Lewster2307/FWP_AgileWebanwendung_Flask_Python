@@ -1,16 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>LearningCards</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Awesome Gallery</h1>
-    {% for x in [1,2,3] %}
-    <p>Hallo Welt! {{ x }}: Es ist {{ currenTime.time() }}</p>
-    {% endfor %}
-    {% for image in image_filenames %}
-    <p><img src="download/{{ image.filename }}" alt="{{ image.title }}"></p>
-    {% endfor %}
+<header>
+    <nav>
+        <ul>
+            <li><a href="/clicked?link=new_quiz">New Quiz</a></li>
+            <li><a href="/clicked?link=progress">Progress</a></li>
+        </ul>
+        <ul class="nav-left">
+            <li><a href="/clicked?link=login">Anmelden</a></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <aside>
+        <ul class="nav-menu">
+            {% for subject in subjects %}
+            <li><a href="/clicked?link={{ subject.name }}">{{ subject.name}}</a></li>
+            {% endfor %}
+        </ul>
+    </aside>
+    <section>
+        <div class="card">
+            <h2>This is the Question</h2>
+            <button class="flip-btn">Flip</button>
+        </div>
+    </section>
+</main>
+<footer>
+    <p>&copy; 2023 LearningCards. All rights reserved.</p>
+</footer>
 </body>
 </html>
