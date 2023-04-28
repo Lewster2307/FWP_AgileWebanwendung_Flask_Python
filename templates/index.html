@@ -8,10 +8,12 @@
 <header>
     <nav>
         <ul>
-            <li><a href="/clicked?link=new_quiz">New Quiz</a></li>
+            <li><b><a href="/" class="logo">LearningCards</a></b></li>
+            <li><a href="/clicked?link=new_quiz">Neues Quiz</a></li>
+            <li><a href="/clicked?link=subjects">Meine Fächer</a></li>
             <li><a href="/clicked?link=progress">Progress</a></li>
         </ul>
-        <ul class="nav-left">
+        <ul>
             <li><a href="/clicked?link=login">Anmelden</a></li>
         </ul>
     </nav>
@@ -20,14 +22,24 @@
     <aside>
         <ul class="nav-menu">
             {% for subject in subjects %}
-            <li><a href="/clicked?link={{ subject.name }}">{{ subject.name}}</a></li>
+                <li><a href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
             {% endfor %}
+            <br>
+            <li><b><a href="/clicked?link=new_subject">Neues Fach</a></b></li>
         </ul>
     </aside>
     <section>
-        <div class="card">
-            <h2>This is the Question</h2>
-            <button class="flip-btn">Flip</button>
+        <div class="card-wrapper">
+            <div class="card">
+                <h2>{{ card_text }}</h2>
+                <a href="/clicked?link=flip" class="flip-btn">Flip</a>
+            </div>
+            {% if flipped == True %}
+                <div class="card_buttons">
+                    <a href="/clicked?link=correct_answer" class="correct-btn">Richtig</a>
+                    <a href="/clicked?link=wrong_answer" class="wrong-btn">Falsch</a>
+                </div>
+            {% endif %}
         </div>
     </section>
 </main>

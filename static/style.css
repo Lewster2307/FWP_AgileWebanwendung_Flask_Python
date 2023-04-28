@@ -33,6 +33,17 @@ nav ul li {
     margin-right: 20px;
 }
 
+.logo {
+    margin-right: 40px;
+    padding: 10px;
+    background: #242841;
+    border-radius: 15px;
+}
+
+.logo a:hover{
+    text-decoration: none;
+}
+
 nav ul li:last-child {
     margin-right: 0;
 }
@@ -86,7 +97,6 @@ section {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
 }
 
 h1 {
@@ -107,6 +117,11 @@ footer {
     margin-top: auto;
 }
 
+.card-wrapper {
+    position: relative;
+    height: 350px;
+}
+
 .card {
     background-color: #333;
     color: white;
@@ -117,6 +132,8 @@ footer {
     align-items: center;
     position: relative;
     z-index: 1;
+    border-radius: 15px;
+    text-align: center;
 }
 
 .card h2 {
@@ -133,4 +150,41 @@ footer {
     border-radius: 5px;
     padding: 5px 10px;
     cursor: pointer;
+    text-decoration: none;
+}
+
+.card_buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.correct-btn,
+.wrong-btn {
+    background-color: #44a601;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.wrong-btn {
+    background-color: #910101;
+}
+
+@media screen and (max-width: 600px) {
+    .card-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .correct-btn,
+    .wrong-btn {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
 }
