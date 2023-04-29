@@ -40,10 +40,6 @@ nav ul li {
     border-radius: 15px;
 }
 
-.logo a:hover{
-    text-decoration: none;
-}
-
 nav ul li:last-child {
     margin-right: 0;
 }

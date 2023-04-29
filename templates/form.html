@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LearningCards</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><b><a style="text-decoration: none" href="/" class="logo">LearningCards</a></b></li>
+            <li><a href="/clicked?link=new_quiz">Neues Quiz</a></li>
+            <li><a href="/clicked?link=subjects">Meine Fächer</a></li>
+            <li><a href="/clicked?link=progress">Progress</a></li>
+        </ul>
+        <ul>
+            <li><a href="/clicked?link=login">Anmelden</a></li>
+        </ul>
+    </nav>
+</header>
+<main>
+    <aside>
+        <ul class="nav-menu">
+            {% for subject in subjects %}
+                {% if subject.id == selected_subject %}
+                    <li><a style="background-color: #242841; color: white"
+                           href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
+                {% else %}
+                    <li><a href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
+                {% endif %}
+
+            {% endfor %}
+            <br>
+            <li><b><a href="/clicked?link=new_subject">Neues Fach</a></b></li>
+        </ul>
+    </aside>
+    <section>
+        {% if formtype == "quiz" %}
+            <form action="new_question_form" method="POST">
+                <p><b>Neue Quizfrage:</b></p>
+                <p>Frage: <input type="text" name="field_question"/></p>
+                <p>Antwort: <input type="text" name="field_answer"/></p>
+                <p><input type="submit" value="Speichern"/></p>
+            </form>
+        {% elif formtype == "subject" %}
+            <form action="new_subject_form" method="POST">
+                <p><b>Neues Fach:</b></p>
+                <p>Fach: <input type="text" name="field_subject"/></p>
+                <p><input type="submit" value="Speichern"/></p>
+            </form>
+        {% elif formtype == "login" %}
+            <form action="login_form" method="POST">
+                <p><b>Login:</b></p>
+                <p>Username: <input type="text" name="field_username"/></p>
+                <p>Passwort: <input type="password" name="field_password"/></p>
+                <p><input type="submit" value="Login"/></p>
+            </form>
+        {% elif formtype == "register" %}
+            <form action="register_form" method="POST">
+                <p><b>Registrieren:</b></p>
+                <p>Username: <input type="text" name="field_username"/></p>
+                <p>Passwort: <input type="password" name="field_password"/></p>
+                <p><input type="submit" value="Registrieren"/></p>
+            </form>
+        {% endif %}
+    </section>
+</main>
+<footer>
+    <p>&copy; 2023 LearningCards. All rights reserved.</p>
+</footer>
+</body>
+</html>
