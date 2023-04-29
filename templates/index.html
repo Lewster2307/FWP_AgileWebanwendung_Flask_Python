@@ -22,7 +22,12 @@
     <aside>
         <ul class="nav-menu">
             {% for subject in subjects %}
-                <li><a href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
+                {% if subject.id == selected_subject %}
+                    <li><a style="background-color: #242841; color: white"href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
+                {% else %}
+                    <li><a href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
+                {% endif %}
+
             {% endfor %}
             <br>
             <li><b><a href="/clicked?link=new_subject">Neues Fach</a></b></li>
