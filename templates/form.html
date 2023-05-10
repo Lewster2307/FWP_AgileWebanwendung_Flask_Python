@@ -14,7 +14,11 @@
             <li><a href="/clicked?link=progress">Progress</a></li>
         </ul>
         <ul>
-            <li><a href="/clicked?link=login">Anmelden</a></li>
+            {% if logged_in %}
+                <li><a href="/clicked?link=logout">Abmelden</a></li>
+            {% else %}
+                <li><a href="/clicked?link=login">Anmelden</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>
@@ -54,6 +58,7 @@
                 <p>Username: <input type="text" name="field_username"/></p>
                 <p>Passwort: <input type="password" name="field_password"/></p>
                 <p><input type="submit" value="Login"/></p>
+                <a onmouseover="this.style.cursor = 'pointer'" style="text-decoration: none; all: unset; font-weight: bold" href="/clicked?link=register">Neu hier? Registrieren</a>
             </form>
         {% elif formtype == "register" %}
             <form action="register_form" method="POST">
@@ -61,6 +66,7 @@
                 <p>Username: <input type="text" name="field_username"/></p>
                 <p>Passwort: <input type="password" name="field_password"/></p>
                 <p><input type="submit" value="Registrieren"/></p>
+                <a onmouseover="this.style.cursor = 'pointer'" style="text-decoration: none; all: unset; font-weight: bold" href="/clicked?link=login">Schon einen Accout? Anmelden</a>
             </form>
         {% endif %}
     </section>

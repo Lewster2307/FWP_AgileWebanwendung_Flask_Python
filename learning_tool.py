@@ -57,40 +57,62 @@ class Questions(db.Model):
         return f"Question ID: {self.id}, Subject: {self.subject}"
 
 
-logged_in = False
-
+# session["logged_in"]
+# session["current_user_id"]
+# session["selected_subject_id"]
+# session["question_id"]
+# session["question"]
+# session["answer"]
+# session["flipped"]
 
 @app.get("/")
 def index():
-    # session["logged_in"] =
-    if not logged_in:
-        return render_template("form.html", subjects="", selected_subject="", formtype="login")
+    if session.get("logged_in") is not True:
+        reset_session_values()
+        return render_template("form.html", subjects="", selected_subject="", formtype="login",
+                               logged_in=session["logged_in"])
 
-    session["selected_subject_id"] = 1
-    session["question_id"] = 0
-    session["question"] = ""
-    session["answer"] = ""
-    session["flipped"] = False
-
-    get_random_question()
-
+    current_user_subjects = db.session.execute(
+        db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
+    if len(current_user_subjects) == 0:
+        return render_template("form.html", subjects=current_user_subjects,
+                               selected_subject=session["selected_subject_id"], formtype="subject",
+                               logged_in=session["logged_in"])
+    else:
+        session["selected_subject_id"] = current_user_subjects[0].id
+        get_random_question()
     return render_index()
 
 
+def reset_session_values():
+    session["logged_in"] = ""
+    session["current_user_id"] = ""
+    session["selected_subject_id"] = ""
+    session["question_id"] = ""
+    session["question"] = ""
+    session["answer"] = ""
+    session["flipped"] = ""
+
 def render_index():
-    current_user_subjects = db.session.execute(db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
-    return render_template("index.html", subjects=current_user_subjects, card_text=session["question"], flipped=session["flipped"], selected_subject=session["selected_subject_id"])
+    current_user_subjects = db.session.execute(
+        db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
+    return render_template("index.html", subjects=current_user_subjects, card_text=session["question"],
+                           flipped=session["flipped"], selected_subject=session["selected_subject_id"],
+                           logged_in=session["logged_in"])
 
 
 def get_random_question():
-    current_user_subjects = db.session.execute(db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
-    print(current_user_subjects)
+    current_user_subjects = db.session.execute(
+        db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
 
-    selected_subject_questions = db.session.execute(db.select(Questions.id, Questions.question, Questions.answer).filter(Questions.creator == session["current_user_id"]).filter(Questions.subject == session["selected_subject_id"])).all()
+    selected_subject_questions = db.session.execute(
+        db.select(Questions.id, Questions.question, Questions.answer).filter(
+            Questions.creator == session["current_user_id"]).filter(
+            Questions.subject == session["selected_subject_id"])).all()
     if len(selected_subject_questions) == 0:
-        return render_template("form.html", subjects=current_user_subjects, selected_subject=session["selected_subject_id"], formtype="quiz")
-    print(selected_subject_questions)
-    print(len(selected_subject_questions))
+        return render_template("form.html", subjects=current_user_subjects,
+                               selected_subject=session["selected_subject_id"], formtype="quiz",
+                               logged_in=session["logged_in"])
     selected_question_row = random.choice(selected_subject_questions)
     session["question_id"] = selected_question_row.id
     session["question"] = selected_question_row.question
@@ -100,30 +122,46 @@ def get_random_question():
 
 @app.route("/clicked")
 def clicked():
-    if not logged_in:
-        return render_template("form.html", subjects="", selected_subject="", formtype="login")
-
-    current_user_subjects = db.session.execute(db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
-
     link = request.args.get("link")
+    if session.get("logged_in") is not True and link != "register":
+        return render_template("form.html", subjects="", selected_subject="", formtype="login",
+                               logged_in=session["logged_in"])
+    if link == "register":
+        return render_template("form.html", subjects="", selected_subject="", formtype="register",
+                               logged_in=session["logged_in"])
+
+    current_user_subjects = db.session.execute(
+        db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
 
     if link != "flip":
         session["flipped"] = False
 
     if link == "new_quiz":
-        return render_template("form.html", subjects=current_user_subjects, selected_subject=session["selected_subject_id"], formtype="quiz")
+        return render_template("form.html", subjects=current_user_subjects,
+                               selected_subject=session["selected_subject_id"], formtype="quiz",
+                               logged_in=session["logged_in"])
     elif link == "subjects":
         return render_index()
     elif link == "progress":
         return render_index()
     elif link == "login":
-        return render_template("form.html", subjects=current_user_subjects, selected_subject=session["selected_subject_id"], formtype="login")
+        return render_template("form.html", subjects="", selected_subject="", formtype="login",
+                               logged_in=session["logged_in"])
+    elif link == "logout":
+        [session.pop(key) for key in list(session.keys())]
+        reset_session_values()
+        return render_template("form.html", subjects="", selected_subject="", formtype="login",
+                               logged_in=session["logged_in"])
     elif link == "new_subject":
-        return render_template("form.html", subjects=current_user_subjects, selected_subject=session["selected_subject_id"], formtype="subject")
+        return render_template("form.html", subjects=current_user_subjects,
+                               selected_subject=session["selected_subject_id"], formtype="subject",
+                               logged_in=session["logged_in"])
     elif link == "flip":
         if not session["flipped"]:
             session["flipped"] = True
-            return render_template("index.html", subjects=current_user_subjects, card_text=session["answer"], flipped=session["flipped"], selected_subject=session["selected_subject_id"])
+            return render_template("index.html", subjects=current_user_subjects, card_text=session["answer"],
+                                   flipped=session["flipped"], selected_subject=session["selected_subject_id"],
+                                   logged_in=session["logged_in"])
         else:
             session["flipped"] = False
             return render_index()
@@ -175,13 +213,24 @@ def new_subject_form():
 def login_form():
     if request.method == "POST":
         form_data = request.form
-        check_for_user = db.session.execute(db.select(User.id).filter(User.username == form_data["field_username"]).filter(User.password == form_data["field_password"])).scalar()
+        check_for_user = db.session.execute(
+            db.select(User.id).filter(User.username == form_data["field_username"]).filter(
+                User.password == form_data["field_password"])).scalar()
         if check_for_user is None:
-            return render_template("form.html", subjects="", selected_subject="", formtype="register")
-        logged_in = True
+            return render_template("form.html", subjects="", selected_subject="", formtype="login",
+                                   logged_in=session["logged_in"])
+        session["logged_in"] = True
         session["current_user_id"] = check_for_user
-        current_user_subjects = db.session.execute(db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
-        return render_template("index.html", subjects=current_user_subjects, card_text="", flipped=False, selected_subject="")
+        current_user_subjects = db.session.execute(
+            db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
+        if len(current_user_subjects) == 0:
+            return render_template("form.html", subjects=current_user_subjects,
+                                   selected_subject=session["selected_subject_id"], formtype="quiz",
+                                   logged_in=session["logged_in"])
+        else:
+            session["selected_subject_id"] = current_user_subjects[0].id
+            get_random_question()
+        return render_index()
 
 
 @app.route("/register_form", methods=["POST"])
@@ -189,9 +238,21 @@ def register_form():
     if request.method == "POST":
         form_data = request.form
         user = User(form_data["field_username"], form_data["field_password"])
+        check_for_user = db.session.execute(
+            db.select(User.id).filter(User.username == form_data["field_username"])).scalar()
+        if check_for_user is not None:
+            return render_template("form.html", subjects="", selected_subject="", formtype="register",
+                                   logged_in=session["logged_in"])
         db.session.add(user)
         db.session.commit()
-        return render_index()
+        check_for_user = db.session.execute(
+            db.select(User.id).filter(User.username == form_data["field_username"]).filter(
+                User.password == form_data["field_password"])).scalar()
+        session["logged_in"] = True
+        session["current_user_id"] = check_for_user
+        return render_template("form.html", subjects="",
+                               selected_subject=session["selected_subject_id"], formtype="subject",
+                               logged_in=session["logged_in"])
 
 
 if __name__ == "__main__":

@@ -14,7 +14,11 @@
             <li><a href="/clicked?link=progress">Progress</a></li>
         </ul>
         <ul>
-            <li><a href="/clicked?link=login">Anmelden</a></li>
+            {% if logged_in %}
+                <li><a href="/clicked?link=logout">Abmelden</a></li>
+            {% else %}
+                <li><a href="/clicked?link=login">Anmelden</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>
