@@ -86,8 +86,7 @@ def index():
                                logged_in=session["logged_in"])
     else:
         session["selected_subject_id"] = current_user_subjects[0].id
-        get_random_question()
-    return render_index()
+        return get_random_question()
 
 
 def reset_session_values():
@@ -116,7 +115,12 @@ def get_random_question():
         db.select(Questions.id, Questions.question, Questions.answer).filter(
             Questions.creator == session["current_user_id"]).filter(
             Questions.subject == session["selected_subject_id"])).all()
+    print(len(selected_subject_questions))
+    print(selected_subject_questions)
     if len(selected_subject_questions) == 0:
+        session["question_id"] = ""
+        session["question"] = ""
+        session["answer"] = ""
         return render_template("form.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], formtype="quiz",
                                logged_in=session["logged_in"])
@@ -170,11 +174,18 @@ def clicked():
                                selected_subject=session["selected_subject_id"], formtype="subject",
                                logged_in=session["logged_in"])
     elif link == "delete_subject":
+        if session.get("selected_subject_id") is None:
+            return render_template("form.html", subjects=current_user_subjects,
+                               selected_subject=session["selected_subject_id"], formtype="subject",
+                               logged_in=session["logged_in"])
         db.session.query(Questions).filter(Questions.subject == session["selected_subject_id"]).delete()
         delete_subject = db.session.execute(
             db.select(Subject).filter(Subject.creator == session["current_user_id"]).filter(Subject.id == session["selected_subject_id"])).scalar()
         db.session.delete(delete_subject)
         db.session.commit()
+        session["question_id"] = ""
+        session["question"] = ""
+        session["answer"] = ""
         current_user_subjects = db.session.execute(
             db.select(Subject.id, Subject.name).filter(Subject.creator == session["current_user_id"])).all()
         if len(current_user_subjects) == 0:
@@ -183,8 +194,7 @@ def clicked():
                                    logged_in=session["logged_in"])
         else:
             session["selected_subject_id"] = current_user_subjects[0].id
-            get_random_question()
-        return render_index()
+            return get_random_question()
     elif link.startswith("delete_question"):
         qid = link[link.find("=")+1:]
         delete_question = db.session.execute(
