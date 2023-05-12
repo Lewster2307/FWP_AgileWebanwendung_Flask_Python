@@ -42,31 +42,41 @@
         {% if formtype == "quiz" %}
             <form action="new_question_form" method="POST">
                 <p><b>Neue Quizfrage:</b></p>
-                <p>Frage: <input type="text" name="field_question"/></p>
-                <p>Antwort: <input type="text" name="field_answer"/></p>
-                <p><input type="submit" value="Speichern"/></p>
+                <p>Frage: <input type="text" name="field_question" required></p>
+                <p>Antwort: <input type="text" name="field_answer" required></p>
+                <p><input type="submit" value="Speichern"></p>
             </form>
         {% elif formtype == "subject" %}
             <form action="new_subject_form" method="POST">
                 <p><b>Neues Fach:</b></p>
-                <p>Fach: <input type="text" name="field_subject"/></p>
-                <p><input type="submit" value="Speichern"/></p>
+                <p>Fach: <input type="text" name="field_subject" required></p>
+                <p><input type="submit" value="Speichern"></p>
             </form>
         {% elif formtype == "login" %}
             <form action="login_form" method="POST">
                 <p><b>Login:</b></p>
-                <p>Username: <input type="text" name="field_username"/></p>
-                <p>Passwort: <input type="password" name="field_password"/></p>
-                <p><input type="submit" value="Login"/></p>
-                <a onmouseover="this.style.cursor = 'pointer'" style="text-decoration: none; all: unset; font-weight: bold" href="/clicked?link=register">Neu hier? Registrieren</a>
+                <p>Username: <input type="text" name="field_username" required></p>
+                <p>Passwort: <input type="password" name="field_password" required></p>
+                <p><input type="submit" value="Login"></p>
+                <a onmouseover="this.style.cursor = 'pointer'"
+                   style="text-decoration: none; all: unset; font-weight: bold" href="/clicked?link=register">Neu hier?
+                    Registrieren</a>
+                {% if error_message != "" %}
+                    <p style="color: darkred"><b>{{ error_message }}</b></p>
+                {% endif %}
             </form>
         {% elif formtype == "register" %}
             <form action="register_form" method="POST">
                 <p><b>Registrieren:</b></p>
-                <p>Username: <input type="text" name="field_username"/></p>
-                <p>Passwort: <input type="password" name="field_password"/></p>
-                <p><input type="submit" value="Registrieren"/></p>
-                <a onmouseover="this.style.cursor = 'pointer'" style="text-decoration: none; all: unset; font-weight: bold" href="/clicked?link=login">Schon einen Accout? Anmelden</a>
+                <p>Username: <input type="text" name="field_username" required></p>
+                <p>Passwort: <input type="password" name="field_password" required></p>
+                <p><input type="submit" value="Registrieren"></p>
+                <a onmouseover="this.style.cursor = 'pointer'"
+                   style="text-decoration: none; all: unset; font-weight: bold" href="/clicked?link=login">Schon einen
+                    Accout? Anmelden</a>
+                {% if error_message != "" %}
+                    <p style="color: darkred"><b>{{ error_message }}</b></p>
+                {% endif %}
             </form>
         {% endif %}
     </section>

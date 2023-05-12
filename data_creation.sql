@@ -1,6 +1,3 @@
-insert into user(id, username, password) values (1, 'Lewin', 'GeheimesPasswort123');
-insert into user(id, username, password) values (2, 'nichtLewin', 'SicheresPasswort#');
-
 insert into subject(id, name, creator) values (1, 'Mathematik 1', 1);
 insert into subject(id, name, creator) values (2, 'Mathematik 2', 1);
 insert into subject(id, name, creator) values (3, 'Programmieren 1', 1);

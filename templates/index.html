@@ -27,7 +27,8 @@
         <ul class="nav-menu">
             {% for subject in subjects %}
                 {% if subject.id == selected_subject %}
-                    <li><a style="background-color: #242841; color: white"href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
+                    <li><a style="background-color: #242841; color: white"
+                           href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
                 {% else %}
                     <li><a href="/clicked?link={{ subject.name }}">{{ subject.name }}</a></li>
                 {% endif %}

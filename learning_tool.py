@@ -1,4 +1,6 @@
-import random, secrets
+import hashlib
+import random
+import secrets
 
 from flask import Flask, render_template, request, session
 from flask_sqlalchemy import SQLAlchemy
@@ -8,6 +10,8 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database_learning_tool.sqlite"
 
 db = SQLAlchemy(app)
+
+salt = b'\x19\xab\x96\x02G\xb8\xd8ZP\xac\x1b\x91\x0e\xa9\x87m,\rhT\xca\xa7\xdd\x18\xf61\x10\'"/<\xf4'
 
 
 class User(db.Model):
@@ -57,6 +61,7 @@ class Questions(db.Model):
         return f"Question ID: {self.id}, Subject: {self.subject}"
 
 
+# --SESSION KEYS--
 # session["logged_in"]
 # session["current_user_id"]
 # session["selected_subject_id"]
@@ -64,6 +69,7 @@ class Questions(db.Model):
 # session["question"]
 # session["answer"]
 # session["flipped"]
+
 
 @app.get("/")
 def index():
@@ -73,7 +79,7 @@ def index():
                                logged_in=session["logged_in"])
 
     current_user_subjects = db.session.execute(
-        db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
+        db.select(Subject.id, Subject.name).filter(Subject.creator == session["current_user_id"])).all()
     if len(current_user_subjects) == 0:
         return render_template("form.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], formtype="subject",
@@ -92,6 +98,7 @@ def reset_session_values():
     session["question"] = ""
     session["answer"] = ""
     session["flipped"] = ""
+
 
 def render_index():
     current_user_subjects = db.session.execute(
@@ -196,7 +203,7 @@ def new_question_form():
         question = Questions(form_data["field_question"], form_data["field_answer"])
         db.session.add(question)
         db.session.commit()
-        return render_index()
+        return get_random_question()
 
 
 @app.route("/new_subject_form", methods=["POST"])
@@ -206,7 +213,9 @@ def new_subject_form():
         subject = Subject(form_data["field_subject"])
         db.session.add(subject)
         db.session.commit()
-        return render_index()
+        session["selected_subject_id"] = db.session.execute(
+            db.select(Subject.id).filter(Subject.creator == session["current_user_id"])).scalar()
+        return get_random_question()
 
 
 @app.route("/login_form", methods=["POST"])
@@ -214,11 +223,21 @@ def login_form():
     if request.method == "POST":
         form_data = request.form
         check_for_user = db.session.execute(
-            db.select(User.id).filter(User.username == form_data["field_username"]).filter(
-                User.password == form_data["field_password"])).scalar()
+            db.select(User.id).filter(User.username == form_data["field_username"])).scalar()
         if check_for_user is None:
             return render_template("form.html", subjects="", selected_subject="", formtype="login",
-                                   logged_in=session["logged_in"])
+                                   logged_in=session["logged_in"],
+                                   error_message=f"Username doesn't exist.")
+
+        hashed_password = hashlib.pbkdf2_hmac('sha256', form_data["field_password"].encode('utf-8'), salt, 100000)
+
+        check_for_user = db.session.execute(
+            db.select(User.id).filter(User.username == form_data["field_username"]).filter(
+                User.password == hashed_password)).scalar()
+        if check_for_user is None:
+            return render_template("form.html", subjects="", selected_subject="", formtype="login",
+                                   logged_in=session["logged_in"],
+                                   error_message=f"Password is wrong.")
         session["logged_in"] = True
         session["current_user_id"] = check_for_user
         current_user_subjects = db.session.execute(
@@ -237,17 +256,25 @@ def login_form():
 def register_form():
     if request.method == "POST":
         form_data = request.form
-        user = User(form_data["field_username"], form_data["field_password"])
+
+        hashed_password = hashlib.pbkdf2_hmac('sha256', form_data["field_password"].encode('utf-8'), salt, 100000)
+
+        new_user = User(form_data["field_username"], hashed_password)
+        if len(new_user.username) < 5:
+            return render_template("form.html", subjects="", selected_subject="", formtype="register",
+                                   logged_in=session["logged_in"],
+                                   error_message=f"Username '{new_user.username}' must be at least 5 characters long.")
         check_for_user = db.session.execute(
-            db.select(User.id).filter(User.username == form_data["field_username"])).scalar()
+            db.select(User.id).filter(User.username == new_user.username)).scalar()
         if check_for_user is not None:
             return render_template("form.html", subjects="", selected_subject="", formtype="register",
-                                   logged_in=session["logged_in"])
-        db.session.add(user)
+                                   logged_in=session["logged_in"],
+                                   error_message=f"Username '{new_user.username}' already taken.")
+        db.session.add(new_user)
         db.session.commit()
         check_for_user = db.session.execute(
-            db.select(User.id).filter(User.username == form_data["field_username"]).filter(
-                User.password == form_data["field_password"])).scalar()
+            db.select(User.id).filter(User.username == User.username).filter(
+                User.password == hashed_password)).scalar()
         session["logged_in"] = True
         session["current_user_id"] = check_for_user
         return render_template("form.html", subjects="",
