@@ -147,8 +147,14 @@ def clicked():
         return render_template("form.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], formtype="quiz",
                                logged_in=session["logged_in"])
-    elif link == "subjects":
-        return render_index()
+    elif link == "question_table":
+        selected_subject_questions = db.session.execute(
+            db.select(Questions.id, Questions.question, Questions.answer).filter(
+                Questions.creator == session["current_user_id"]).filter(
+                Questions.subject == session["selected_subject_id"])).all()
+        return render_template("question_table.html", subjects=current_user_subjects,
+                               selected_subject=session["selected_subject_id"], questions=selected_subject_questions,
+                               logged_in=session["logged_in"])
     elif link == "progress":
         return render_index()
     elif link == "login":
@@ -162,6 +168,40 @@ def clicked():
     elif link == "new_subject":
         return render_template("form.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], formtype="subject",
+                               logged_in=session["logged_in"])
+    elif link == "delete_subject":
+        db.session.query(Questions).filter(Questions.subject == session["selected_subject_id"]).delete()
+        delete_subject = db.session.execute(
+            db.select(Subject).filter(Subject.creator == session["current_user_id"]).filter(Subject.id == session["selected_subject_id"])).scalar()
+        db.session.delete(delete_subject)
+        db.session.commit()
+        current_user_subjects = db.session.execute(
+            db.select(Subject.id, Subject.name).filter(Subject.creator == session["current_user_id"])).all()
+        if len(current_user_subjects) == 0:
+            return render_template("form.html", subjects=current_user_subjects,
+                                   selected_subject=session["selected_subject_id"], formtype="subject",
+                                   logged_in=session["logged_in"])
+        else:
+            session["selected_subject_id"] = current_user_subjects[0].id
+            get_random_question()
+        return render_index()
+    elif link.startswith("delete_question"):
+        qid = link[link.find("=")+1:]
+        delete_question = db.session.execute(
+            db.select(Questions).filter(
+                Questions.creator == session["current_user_id"]).filter(
+                Questions.id == qid)).scalar()
+        db.session.delete(delete_question)
+        db.session.commit()
+        selected_subject_questions = db.session.execute(
+            db.select(Questions.id, Questions.question, Questions.answer).filter(
+                Questions.creator == session["current_user_id"]).filter(
+                Questions.subject == session["selected_subject_id"])).all()
+        session["question_id"] = ""
+        session["question"] = ""
+        session["answer"] = ""
+        return render_template("question_table.html", subjects=current_user_subjects,
+                               selected_subject=session["selected_subject_id"], questions=selected_subject_questions,
                                logged_in=session["logged_in"])
     elif link == "flip":
         if not session["flipped"]:
@@ -211,6 +251,15 @@ def new_subject_form():
     if request.method == "POST":
         form_data = request.form
         subject = Subject(form_data["field_subject"])
+        check_for_subject = db.session.execute(
+            db.select(Subject.id).filter(Subject.name == form_data["field_subject"])).scalar()
+        if check_for_subject is not None:
+            current_user_subjects = db.session.execute(
+                db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
+            return render_template("form.html", subjects=current_user_subjects,
+                                   selected_subject=session["selected_subject_id"], formtype="subject",
+                                   logged_in=session["logged_in"],
+                                   error_message=f"Subject name already taken.")
         db.session.add(subject)
         db.session.commit()
         session["selected_subject_id"] = db.session.execute(
@@ -283,4 +332,4 @@ def register_form():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

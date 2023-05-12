@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>LearningCards</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_question_table.css') }}">
 </head>
 <body>
 <header>
@@ -40,18 +40,18 @@
         </ul>
     </aside>
     <section>
-        <div class="card-wrapper">
-            <div class="card">
-                <h2>{{ card_text }}</h2>
-                <a href="/clicked?link=flip" class="flip-btn">Flip</a>
-            </div>
-            {% if flipped == True %}
-                <div class="card_buttons">
-                    <a href="/clicked?link=correct_answer" class="correct-btn">Richtig</a>
-                    <a href="/clicked?link=wrong_answer" class="wrong-btn">Falsch</a>
-                </div>
-            {% endif %}
-        </div>
+        <table class="qa_table">
+            <th>Frage</th>
+            <th>Antwort</th>
+            <th></th>
+            {% for question in questions %}
+                <tr>
+                    <td>{{ question.question }}</td>
+                    <td>{{ question.answer }}</td>
+                    <td><a href="/clicked?link=delete_question?qid={{ question.id }}"> Frage löschen</a></td>
+                </tr>
+            {% endfor %}
+        </table>
     </section>
 </main>
 <footer>

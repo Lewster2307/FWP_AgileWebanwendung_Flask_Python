@@ -10,7 +10,7 @@
         <ul>
             <li><b><a style="text-decoration: none" href="/" class="logo">LearningCards</a></b></li>
             <li><a href="/clicked?link=new_quiz">Neues Quiz</a></li>
-            <li><a href="/clicked?link=subjects">Meine Fächer</a></li>
+            <li><a href="/clicked?link=question_table">Fragen</a></li>
             <li><a href="/clicked?link=progress">Progress</a></li>
         </ul>
         <ul>
@@ -36,6 +36,7 @@
             {% endfor %}
             <br>
             <li><b><a href="/clicked?link=new_subject">Neues Fach</a></b></li>
+            <li><b><a href="/clicked?link=delete_subject">Fach löschen</a></b></li>
         </ul>
     </aside>
     <section>
@@ -45,12 +46,18 @@
                 <p>Frage: <input type="text" name="field_question" required></p>
                 <p>Antwort: <input type="text" name="field_answer" required></p>
                 <p><input type="submit" value="Speichern"></p>
+                {% if error_message != "" %}
+                    <p style="color: darkred"><b>{{ error_message }}</b></p>
+                {% endif %}
             </form>
         {% elif formtype == "subject" %}
             <form action="new_subject_form" method="POST">
                 <p><b>Neues Fach:</b></p>
                 <p>Fach: <input type="text" name="field_subject" required></p>
                 <p><input type="submit" value="Speichern"></p>
+                {% if error_message != "" %}
+                    <p style="color: darkred"><b>{{ error_message }}</b></p>
+                {% endif %}
             </form>
         {% elif formtype == "login" %}
             <form action="login_form" method="POST">
