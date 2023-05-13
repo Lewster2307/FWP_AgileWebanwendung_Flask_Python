@@ -11,6 +11,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database_learning_tool.sqlite
 
 db = SQLAlchemy(app)
 
+# Used for password hashing
 salt = b'\x19\xab\x96\x02G\xb8\xd8ZP\xac\x1b\x91\x0e\xa9\x87m,\rhT\xca\xa7\xdd\x18\xf61\x10\'"/<\xf4'
 
 
@@ -115,8 +116,6 @@ def get_random_question():
         db.select(Questions.id, Questions.question, Questions.answer).filter(
             Questions.creator == session["current_user_id"]).filter(
             Questions.subject == session["selected_subject_id"])).all()
-    print(len(selected_subject_questions))
-    print(selected_subject_questions)
     if len(selected_subject_questions) == 0:
         session["question_id"] = ""
         session["question"] = ""
@@ -134,6 +133,8 @@ def get_random_question():
 @app.route("/clicked")
 def clicked():
     link = request.args.get("link")
+
+    # Checks if logged in. If not -> opens login/register
     if session.get("logged_in") is not True and link != "register":
         return render_template("form.html", subjects="", selected_subject="", formtype="login",
                                logged_in=session["logged_in"])
@@ -141,16 +142,26 @@ def clicked():
         return render_template("form.html", subjects="", selected_subject="", formtype="register",
                                logged_in=session["logged_in"])
 
+    # Gets all subjects of the current user
     current_user_subjects = db.session.execute(
         db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
 
+    # Forces card to be not be flipped when it shouldn't
     if link != "flip":
         session["flipped"] = False
 
+    # Checks all different args passed in link
+    # Opens new quiz form if a subject exists else opens new subject form
     if link == "new_quiz":
-        return render_template("form.html", subjects=current_user_subjects,
-                               selected_subject=session["selected_subject_id"], formtype="quiz",
-                               logged_in=session["logged_in"])
+        if session["selected_subject_id"] != "":
+            return render_template("form.html", subjects=current_user_subjects,
+                                   selected_subject=session["selected_subject_id"], formtype="quiz",
+                                   logged_in=session["logged_in"])
+        else:
+            return render_template("form.html", subjects=current_user_subjects,
+                                   selected_subject="", formtype="subject",
+                                   logged_in=session["logged_in"])
+    # Opens a list of all the questions for the selected subject
     elif link == "question_table":
         selected_subject_questions = db.session.execute(
             db.select(Questions.id, Questions.question, Questions.answer).filter(
@@ -159,28 +170,33 @@ def clicked():
         return render_template("question_table.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], questions=selected_subject_questions,
                                logged_in=session["logged_in"])
+    # TODO
     elif link == "progress":
         return render_index()
+    # Opens login form
     elif link == "login":
         return render_template("form.html", subjects="", selected_subject="", formtype="login",
                                logged_in=session["logged_in"])
+    # Resets all session cookies and opens login form
     elif link == "logout":
-        [session.pop(key) for key in list(session.keys())]
         reset_session_values()
         return render_template("form.html", subjects="", selected_subject="", formtype="login",
                                logged_in=session["logged_in"])
+    # Opens new subject form
     elif link == "new_subject":
         return render_template("form.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], formtype="subject",
                                logged_in=session["logged_in"])
+    # Deletes the current selected if a subject exists else opens the new subject form
     elif link == "delete_subject":
-        if session.get("selected_subject_id") is None:
+        if session.get("selected_subject_id") is None or session.get("selected_subject_id") == "":
             return render_template("form.html", subjects=current_user_subjects,
-                               selected_subject=session["selected_subject_id"], formtype="subject",
-                               logged_in=session["logged_in"])
+                                   selected_subject=session["selected_subject_id"], formtype="subject",
+                                   logged_in=session["logged_in"])
         db.session.query(Questions).filter(Questions.subject == session["selected_subject_id"]).delete()
         delete_subject = db.session.execute(
-            db.select(Subject).filter(Subject.creator == session["current_user_id"]).filter(Subject.id == session["selected_subject_id"])).scalar()
+            db.select(Subject).filter(Subject.creator == session["current_user_id"]).filter(
+                Subject.id == session["selected_subject_id"])).scalar()
         db.session.delete(delete_subject)
         db.session.commit()
         session["question_id"] = ""
@@ -189,14 +205,16 @@ def clicked():
         current_user_subjects = db.session.execute(
             db.select(Subject.id, Subject.name).filter(Subject.creator == session["current_user_id"])).all()
         if len(current_user_subjects) == 0:
+            session["selected_subject_id"] = ""
             return render_template("form.html", subjects=current_user_subjects,
                                    selected_subject=session["selected_subject_id"], formtype="subject",
                                    logged_in=session["logged_in"])
         else:
             session["selected_subject_id"] = current_user_subjects[0].id
             return get_random_question()
+    # Deletes the selected question
     elif link.startswith("delete_question"):
-        qid = link[link.find("=")+1:]
+        qid = link[link.find("=") + 1:]
         delete_question = db.session.execute(
             db.select(Questions).filter(
                 Questions.creator == session["current_user_id"]).filter(
@@ -213,6 +231,7 @@ def clicked():
         return render_template("question_table.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], questions=selected_subject_questions,
                                logged_in=session["logged_in"])
+    # Flips the card by changing the card_text from question to answer and vice versa
     elif link == "flip":
         if not session["flipped"]:
             session["flipped"] = True
@@ -222,6 +241,7 @@ def clicked():
         else:
             session["flipped"] = False
             return render_index()
+    # Increments the correct answer count for the current question and loads a new question
     elif link == "correct_answer":
         question = db.session.execute(db.select(Questions).filter(Questions.id == session["question_id"])).scalar()
         question.count_correct += 1
@@ -230,6 +250,7 @@ def clicked():
 
         get_random_question()
         return render_index()
+    # Increments the wrong answer count for the current question and loads a new question
     elif link == "wrong_answer":
         question = db.session.execute(db.select(Questions).filter(Questions.id == session["question_id"])).scalar()
         question.count_wrong += 1
@@ -303,7 +324,7 @@ def login_form():
             db.select(Subject.name, Subject.id).filter(Subject.creator == session["current_user_id"])).all()
         if len(current_user_subjects) == 0:
             return render_template("form.html", subjects=current_user_subjects,
-                                   selected_subject=session["selected_subject_id"], formtype="quiz",
+                                   selected_subject=session["selected_subject_id"], formtype="subject",
                                    logged_in=session["logged_in"])
         else:
             session["selected_subject_id"] = current_user_subjects[0].id
@@ -322,7 +343,7 @@ def register_form():
         if len(new_user.username) < 5:
             return render_template("form.html", subjects="", selected_subject="", formtype="register",
                                    logged_in=session["logged_in"],
-                                   error_message=f"Username '{new_user.username}' must be at least 5 characters long.")
+                                   error_message=f"Username must be at least 5 characters long.")
         check_for_user = db.session.execute(
             db.select(User.id).filter(User.username == new_user.username)).scalar()
         if check_for_user is not None:
@@ -342,4 +363,4 @@ def register_form():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

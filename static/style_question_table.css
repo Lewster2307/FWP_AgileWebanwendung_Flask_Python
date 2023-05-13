@@ -107,6 +107,7 @@ section {
 .qa_table td:nth-child(2) {
     width: 45%;
 }
+
 .qa_table th:nth-child(3),
 .qa_table td:nth-child(3) {
     width: 10%;
