@@ -187,7 +187,6 @@ def clicked():
                     percent_correct = round(count_correct / count_sum, 3)
                     percent_wrong = round(count_wrong / count_sum, 3)
             count_all_subjects.append((subject.name, percent_correct, percent_wrong, count_correct, count_wrong))
-        print(count_all_subjects)
         return render_template("progress.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], data=count_all_subjects,
                                logged_in=session["logged_in"])
