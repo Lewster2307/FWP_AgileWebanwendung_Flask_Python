@@ -170,9 +170,27 @@ def clicked():
         return render_template("question_table.html", subjects=current_user_subjects,
                                selected_subject=session["selected_subject_id"], questions=selected_subject_questions,
                                logged_in=session["logged_in"])
-    # TODO
     elif link == "progress":
-        return render_index()
+        count_all_subjects = []
+        for subject in current_user_subjects:
+            count_wrong = 0
+            count_correct = 0
+            percent_correct = 0
+            percent_wrong = 0
+            questions = db.session.execute(
+                db.select(Questions.count_wrong, Questions.count_correct).filter(Questions.subject == subject.id)).all()
+            for question in questions:
+                count_wrong += question.count_wrong
+                count_correct += question.count_correct
+                count_sum = count_correct + count_wrong
+                if count_sum != 0:
+                    percent_correct = round(count_correct / count_sum, 3)
+                    percent_wrong = round(count_wrong / count_sum, 3)
+            count_all_subjects.append((subject.name, percent_correct, percent_wrong, count_correct, count_wrong))
+        print(count_all_subjects)
+        return render_template("progress.html", subjects=current_user_subjects,
+                               selected_subject=session["selected_subject_id"], data=count_all_subjects,
+                               logged_in=session["logged_in"])
     # Opens login form
     elif link == "login":
         return render_template("form.html", subjects="", selected_subject="", formtype="login",

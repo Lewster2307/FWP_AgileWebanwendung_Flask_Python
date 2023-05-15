@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>LearningCards</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_index+form.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_question_table+progress.css') }}">
 </head>
 <body>
 <header>
@@ -40,18 +40,18 @@
         </ul>
     </aside>
     <section>
-        <div class="card-wrapper">
-            <div class="card">
-                <h2>{{ card_text }}</h2>
-                <a href="/clicked?link=flip" class="flip-btn">Flip</a>
-            </div>
-            {% if flipped == True %}
-                <div class="card_buttons">
-                    <a href="/clicked?link=correct_answer" class="correct-btn">Richtig</a>
-                    <a href="/clicked?link=wrong_answer" class="wrong-btn">Falsch</a>
+        {% for x in data %}
+            <div style="margin-bottom: 10px;">
+                <p><b>{{ x[0] }}</b></p>
+                <div style="width: 400px; height: 20px; border: 1px solid #000;">
+                    <div style="width: {{ x[1]*100 }}%; height: 100%; background: linear-gradient(to right, #007200, #07d707); float: left;"
+                         title="{{ x[3] }}"></div>
+                    <div style="width: {{ x[2]*100 }}%; height: 100%; background: linear-gradient(to right, #f12c2c, #880101); float: left;"
+                         title="{{ x[4] }}"></div>
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endfor %}
+
     </section>
 </main>
 <footer>
