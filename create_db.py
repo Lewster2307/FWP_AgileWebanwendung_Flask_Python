@@ -1,6 +1,5 @@
 import hashlib
-from learning_tool import app, db, salt
-from models import User
+from learning_tool import app, db, User, salt
 
 with app.app_context():
     db.create_all()
