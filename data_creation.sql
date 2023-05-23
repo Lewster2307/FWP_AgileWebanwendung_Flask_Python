@@ -1,3 +1,4 @@
+-- Create test data
 insert into subject(id, name, creator) values (1, 'Mathematik 1', 1);
 insert into subject(id, name, creator) values (2, 'Mathematik 2', 1);
 insert into subject(id, name, creator) values (3, 'Programmieren 1', 1);
@@ -14,7 +15,3 @@ insert into questions(id, question, answer, subject, creator, count_correct, cou
 insert into questions(id, question, answer, subject, creator, count_correct, count_wrong) values (8, 'Was ist eine synchronized Methode?', 'Eine Methode in der zu jedem Zeitpunkt nur ein Thread sein darf.', 4, 1 ,0 , 123);
 insert into questions(id, question, answer, subject, creator, count_correct, count_wrong) values (9, 'Was ist die DDL', 'Data Definition Language?', 5, 1 ,11, 0);
 insert into questions(id, question, answer, subject, creator, count_correct, count_wrong) values (10, 'Was ist die DML', 'Data Manipulation Language?', 5, 1 ,0, 0);
-
-delete from user;
-delete from subject;
-delete from questions;

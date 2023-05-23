@@ -8,7 +8,14 @@ from learning_tool import app, db
 from learning_tool.models import Subject, Questions, User
 
 
-print("THE CODE GOT INTO THE views.py?!")
+# --SESSION KEYS--
+# session["logged_in"]
+# session["current_user_id"]
+# session["selected_subject_id"]
+# session["question_id"]
+# session["question"]
+# session["answer"]
+# session["flipped"]
 
 
 @app.get("/")
@@ -302,15 +309,15 @@ def register_form():
                                    error_message=f"Username must be at least 5 characters long.")
         check_for_user = db.session.execute(
             db.select(User.id).filter(User.username == new_user.username)).scalar()
-        db.session.execute()
         if check_for_user is not None:
+            reset_session_values()
             return render_template("form.html", subjects="", selected_subject="", formtype="register",
                                    logged_in=session["logged_in"],
                                    error_message=f"Username '{new_user.username}' already taken.")
         db.session.add(new_user)
         db.session.commit()
         check_for_user = db.session.execute(
-            db.select(User.id).filter(User.username == User.username).filter(
+            db.select(User.id).filter(User.username == new_user.username).filter(
                 User.password == hashed_password)).scalar()
         session["logged_in"] = True
         session["current_user_id"] = check_for_user

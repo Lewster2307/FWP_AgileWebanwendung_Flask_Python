@@ -6,16 +6,7 @@ app.config.from_object('config')
 
 db = SQLAlchemy(app)
 
-from learning_tool import views
-
-# --SESSION KEYS--
-# session["logged_in"]
-# session["current_user_id"]
-# session["selected_subject_id"]
-# session["question_id"]
-# session["question"]
-# session["answer"]
-# session["flipped"]
+from learning_tool.views import *
 
 
 if __name__ == "__main__":
