@@ -8,6 +8,5 @@ db = SQLAlchemy(app)
 
 from learning_tool.views import *
 
-
 if __name__ == "__main__":
     app.run()
